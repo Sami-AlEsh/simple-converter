@@ -1,82 +1,126 @@
+const units = {
+  /*
+   * Reference: https://en.wikipedia.org/wiki/International_System_of_Units
+   */
+  yotta: "Y",
+  zeta: "Z",
+  exa: "E",
+  peta: "P",
+  tera: "T",
+  giga: "G",
+  mega: "M",
+  kilo: "k",
+  hecto: "h",
+  deca: "D",
+
+  deci: "d",
+  centi: "c",
+  mili: "m",
+  micro: "μ",
+  nano: "n",
+  pico: "p",
+  femto: "f",
+  atto: "a",
+  zepto: "z",
+  yocto: "y",
+
+  /*
+   * Reference: https://ec.europa.eu/health/scientific_committees/opinions_layman/en/phthalates-school-supplies/glossary/mno/mass-units.htm
+   */
+  tonne: "t",
+  pound: "lb",
+  ounce: "oz",
+
+  gram: "",
+  meter: "",
+};
+
 class Converter {
   constructor() {
-    this.C = require("./Constants");
+    this.units = {
+      /*
+       * Reference: https://en.wikipedia.org/wiki/International_System_of_Units
+       */
+      Y: Math.pow(10, 24),
+      Z: Math.pow(10, 21),
+      E: Math.pow(10, 18),
+      P: Math.pow(10, 15),
+      T: Math.pow(10, 12),
+      G: Math.pow(10, 9),
+      M: Math.pow(10, 6),
+      k: Math.pow(10, 3),
+      h: Math.pow(10, 2),
+      D: Math.pow(10, 1),
 
-    this.lengthMultiplier = {
-      mm: {
-        mm: 1,
-        cm: 1 / this.C.CM_MM,
-        m: 1 / this.C.M_MM,
-        km: 1 / this.C.KM_MM,
-      },
-      cm: {
-        mm: this.C.CM_MM,
-        cm: 1,
-        m: 1 / this.C.M_CM,
-        km: 1 / this.C.KM_CM,
-      },
-      m: {
-        mm: this.C.M_MM,
-        cm: this.C.M_CM,
-        m: 1,
-        km: 1 / this.C.KM_M,
-      },
-      km: {
-        mm: this.C.KM_MM,
-        cm: this.C.KM_CM,
-        m: this.C.KM_M,
-        km: 1,
-      },
-    };
+      d: Math.pow(10, -1),
+      c: Math.pow(10, -2),
+      m: Math.pow(10, -3),
+      μ: Math.pow(10, -6),
+      n: Math.pow(10, -9),
+      p: Math.pow(10, -12),
+      f: Math.pow(10, -15),
+      a: Math.pow(10, -18),
+      z: Math.pow(10, -21),
+      y: Math.pow(10, -24),
 
-    this.weightMultiplier = {
-      mg: {
-        mg: 1,
-        g: 1 / this.C.G_MG,
-        lb: 1 / this.C.LB_MG,
-        kg: 1 / this.C.KG_MG,
-      },
-      g: {
-        mg: this.C.G_MG,
-        g: 1,
-        lb: 1 / this.C.LB_G,
-        kg: 1 / this.C.KG_G,
-      },
-      kg: {
-        mg: this.C.KG_MG,
-        g: this.C.KG_G,
-        lb: this.C.KG_LB,
-        kg: 1,
-      },
-      lb: {
-        mg: this.C.KG_MG,
-        g: this.C.KG_G,
-        lb: 1,
-        kg: 1 / this.C.KG_LB,
-      },
+      /*
+       * Reference: https://ec.europa.eu/health/scientific_committees/opinions_layman/en/phthalates-school-supplies/glossary/mno/mass-units.htm
+       */
+      t: Math.pow(10, 6),
+      lb: 453.59,
+      oz: 28.35,
+
+      /*
+       * Measures
+       */
+      meter: 1,
+      gram: 1,
     };
   }
 
-  _selectVariablesMultiplier(inputUnit, outputUnit) {
-    const lengthUnits = Object.keys(this.lengthMultiplier);
-    const weightUnits = Object.keys(this.weightMultiplier);
-
-    if (lengthUnits.includes(inputUnit) && lengthUnits.includes(outputUnit)) {
-      return this.lengthMultiplier;
-    } else if (
-      weightUnits.includes(inputUnit) &&
-      weightUnits.includes(outputUnit)
-    ) {
-      return this.weightMultiplier;
-    } else {
-      throw Error("Invalid input and output types!");
+  _validateUnits(inputUnit, outputUnit) {
+    if (inputUnit.length > 2 || outputUnit.length > 2) {
+      throw new Error(" invalid units!");
     }
+
+    let inMeasure = inputUnit[inputUnit.length - 1];
+    let outMeasure = outputUnit[outputUnit.length - 1];
+    if (
+      inMeasure !== outMeasure ||
+      !["m", "g"].includes(inMeasure) ||
+      !["m", "g"].includes(outMeasure)
+    ) {
+      throw new Error(" invalid units!");
+    }
+
+    inMeasure = inMeasure === "m" ? "meter" : "gram";
+    outMeasure = outMeasure === "m" ? "meter" : "gram";
+
+    const _inputUnit = inputUnit.length === 2 ? inputUnit[0] : inMeasure;
+    const _outputUnit = outputUnit.length === 2 ? outputUnit[0] : outMeasure;
+
+    return { inputUnit: _inputUnit, outputUnit: _outputUnit };
   }
 
-  convert(num, inputUnit, outputUnit) {
-    const multiplier = this._selectVariablesMultiplier(inputUnit, outputUnit);
-    return num * multiplier[inputUnit][outputUnit];
+  _convert(num, inputUnit, outputUnit) {
+    const processedUnits = this._validateUnits(inputUnit, outputUnit);
+    return (
+      num *
+      (this.units[processedUnits.inputUnit] /
+        this.units[processedUnits.outputUnit])
+    );
+  }
+
+  convertLength(num, from, to) {
+    return this._convert(num, from + "m", to + "m");
+  }
+
+  convertWeight(num, from, to) {
+    return this._convert(num, from + "g", to + "g");
   }
 }
 
-module.exports = new Converter();
+module.exports = {
+  units,
+  converter: new Converter(),
+};

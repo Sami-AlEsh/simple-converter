@@ -1,6 +1,6 @@
 {
   "name": "simple-converter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "scripts": {
     "test": "node ./test.js"
@@ -10,7 +10,7 @@
     "url": "git+https://github.com/Sami-AlEsh/simple-converter.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Sami-AlEsh",
   "license": "ISC",
   "description": ""
 }
