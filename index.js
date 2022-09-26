@@ -33,6 +33,8 @@ class Converter {
       lb: 453.59, // how many grams are in one pounds
       oz: 28.35, // how many grams are in one ounce
 
+      inch: 0.0254,
+
       /*
        * Measures
        */
@@ -46,21 +48,29 @@ class Converter {
     let value = 1;
 
     const lastLetter = unit[unit.length - 1];
-    if (lastLetter === "m") {
+    if (
+      (unit.length === 2 && lastLetter === "m") ||
+      ["meter", "inch"].includes(unit)
+    ) {
       type = "length";
-    } else if (lastLetter === "g") {
+    } else if (
+      (unit.length === 2 && lastLetter === "g") ||
+      ["t", "lb", "oz", "gram"].includes(unit)
+    ) {
       type = "weight";
     } else {
       throw new Error("Invalid unit type: " + lastLetter);
     }
 
-    unit = unit.slice(0, unit.length - 1);
+    if (unit.length == 2 && !["lb", "oz"].includes(unit))
+      unit = unit.slice(0, unit.length - 1);
+
     if (unit.length > 0) {
       if (Object.keys(this.units).includes(unit)) {
         value = this.units[unit];
         return { type, value };
       } else {
-        throw new Error("Invalid unit /" + unit + "/ of type: " + type);
+        throw new Error(`Invalid unit /${unit}/ of type:${type}`);
       }
     }
 
